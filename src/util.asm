@@ -28,6 +28,8 @@ string_length:
 
 print_newline:
     mov rdi, 10
+    call print_char
+
 print_char:
     push rdi
     mov rdi, rsp
@@ -68,14 +70,16 @@ print_uint:
     ret
 
 print_int:
-    test rdi, rdi
-    jns print_uint
-    push rdi
-    mov rdi, '-'
-    call print_char
-    pop rdi
-    neg rdi
-    jmp print_uint
+	test rdi, rdi
+	jns print_uint
+	mov rax, rdi
+	neg rax
+	push rax
+	mov rdi, '-'
+	call print_char
+	pop rax
+	mov rdi, rax
+	jmp print_uint
 
 ; returns rax: number, rdx : length
 parse_int:
@@ -119,18 +123,22 @@ parse_uint:
     ret
 
 string_equals:
-    mov al, byte [rdi]
-    cmp al, byte [rsi]
-    jne .no
-    inc rdi
-    inc rsi
-    test al, al
-    jnz string_equals
-    mov rax, 1
-    ret
-    .no:
-    xor rax, rax
-    ret 
+        xor rcx, rcx
+        .loop:
+		mov al, byte[rdi+rcx]
+		mov dl, byte[rsi+rcx]
+		cmp al, dl
+		jne .not_equal
+		inc rcx
+		cmp al, 0
+		je .equal
+		jmp .loop
+        .not_equal:
+		xor rax, rax
+		ret
+        .equal:
+		mov rax, 1
+		ret
 
 read_char:
     push 0
